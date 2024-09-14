@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     }
     printf("micarray started...\n");
     int myArraySize = sizeof(mic_array_t);
-    printf("micarray size is: %d",myArraySize);
+    printf("micarray size is: %d\n",myArraySize);
     mic_array_t myArray[NUM_MICS];
     char device_name[10];// = "plughw:";
     strcat(device_name, "plughw:");
