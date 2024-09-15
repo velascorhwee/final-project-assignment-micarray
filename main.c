@@ -17,11 +17,11 @@ int main(int argc, char *argv[]) {
     int myArraySize = sizeof(mic_array_t);
     printf("micarray size is: %d\n",myArraySize);
     mic_array_t myArray[NUM_MICS];
-    char device_name[10];// = "plughw:";
-    strcat(device_name, "plughw:");
-    strcat(device_name,argv[1]);
-    strcat(device_name,",");
-    strcat(device_name,argv[2]);
+    char device_name[] = "plughw:2,0";
+    //strcat(device_name, "plughw:");
+    //strcat(device_name,argv[1]);
+    //strcat(device_name,",");
+    //strcat(device_name,argv[2]);
     printf("Device Name: %s\n",device_name);    
     myArray[0].device_name=device_name;//("plughw:1,0");
     myArray[0].rate = SAMPLE_RATE;
