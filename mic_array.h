@@ -10,10 +10,13 @@
 #define CHANNELS 1
 #define SAMPLE_RATE 44100
 #define PCM_FORMAT SND_PCM_FORMAT_S16_LE  // PCM format (16-bit little-endian)
-#define CAPTURE_DURATION 5
+#define CAPTURE_DURATION 1
+#define MAX_DEVICES 7
+
 
 
 typedef struct {
+    char micPos;
     char *device_name;
     char *buffer;
     snd_pcm_t *pcm_handle;
@@ -28,10 +31,16 @@ typedef struct {
 }   mic_array_t;
   
 
-int open_and_configure_capture_devices(mic_array_t *mic_array);
+int open_and_configure_capture_devices(mic_array_t **mic_array);
 
-int close_capture_devices(mic_array_t *mic_array);
+int close_capture_devices(mic_array_t **mic_array);
 
-int open_file_and_record(mic_array_t *mic_array);
+int open_file_and_record(mic_array_t *mic);
+
+void *open_file_and_record_thread(void *arg);
+
+void get_device_names(char **devices);
+
+void print_device_names();
 
 #endif
