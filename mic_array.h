@@ -10,7 +10,7 @@
 #define CHANNELS 1
 #define SAMPLE_RATE 44100
 #define PCM_FORMAT SND_PCM_FORMAT_S16_LE  // PCM format (16-bit little-endian)
-#define CAPTURE_DURATION 1
+#define CAPTURE_DURATION 5
 #define MAX_DEVICES 7
 
 
