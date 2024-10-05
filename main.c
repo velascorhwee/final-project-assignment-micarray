@@ -59,9 +59,11 @@ int main(int argc, char *argv[]) {
     //    printf("Error recording\n");
     //    return -1;
     //}
+
     for(int i = 0; i < MAX_DEVICES; i++){
     myArray[i]->running = 1;
     pthread_create(&myArray[i]->thread,NULL,open_file_and_record_thread,myArray[i]);
+    //open_file_and_record(myArray[i]);
     }
 
     //pthread_join(myArray[0]->thread,NULL);
@@ -71,14 +73,19 @@ int main(int argc, char *argv[]) {
     for(int i = 0 ; i < MAX_DEVICES ; i++){
         threads_complete += myArray[i]->running;
     }
-
-    while(threads_complete){
-        threads_complete = 0;
+    int running_threads = 7;
+    while(running_threads){
+        printf("running threads: %d\n",running_threads);
         for(int i = 0 ; i < MAX_DEVICES ; i++){
-            if(myArray[i]->running){
+            if(myArray[i]->running == 0){
+                printf("thread is running: %d\n",myArray[i]->running);
+                myArray[i]->running = -1;
                 pthread_join(myArray[i]->thread,NULL);
+                //close_capture_device(myArray[i]);
+                //free(device_names[i]);
+		        running_threads -= 1;
+                //free(myArray[i]);
             }
-            threads_complete += myArray[i]->running;
         }
 
     }

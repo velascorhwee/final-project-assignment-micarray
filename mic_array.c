@@ -58,6 +58,19 @@ int open_and_configure_capture_devices(mic_array_t **mic_array){
     return 1;
 }
 
+int close_capture_device(mic_array_t *micarray){
+    printf("clean up mic %d\n",micarray->micPos);
+    free(micarray->buffer);
+    if(micarray->recFile != NULL){
+        fclose(micarray->recFile);
+    }
+    snd_pcm_drain(micarray->pcm_handle);
+    snd_pcm_close(micarray->pcm_handle);
+    snd_pcm_hw_params_free(micarray->params);
+
+    return 1;
+}
+
 int close_capture_devices(mic_array_t **mic_array){
     for(int i = 0; i < MAX_DEVICES; i++){
         // Clean up
@@ -91,7 +104,7 @@ void *open_file_and_record_thread(void *arg){
     mic->recFile = fopen(filename, "wb");
     if (mic->recFile == NULL) {
         fprintf(stderr, "Unable to open output file\n");
-        return -1;
+        return (void *)-1;
     }
     int rc;
     // Capture data for the specified duration
@@ -108,7 +121,7 @@ void *open_file_and_record_thread(void *arg){
             fprintf(stderr, "Overrun occurred\n");
             snd_pcm_prepare(mic->pcm_handle);
         } else if (rc < 0) {
-            fprintf(stderr, "Error from read: %s\n", snd_strerror(rc));
+            fprintf(stderr, "Error from read: %s %d\n", snd_strerror(rc), mic->micPos);
         } else if (rc != (int)(mic->frames)) {
             fprintf(stderr, "Short read, read %d frames\n", rc);
         }
@@ -230,6 +243,7 @@ void get_device_names(char **devices){
                 // Isolate the third part of the port (e.g., 1.1.3 -> "1.3")
                 char *third_part = strchr(port, '.');
                 printf("third part : %s\n",third_part);
+                //this is very specific for the raspberry pi 4 using the TP Link 7 port usb hub
                 if (third_part && strlen(third_part) >= 2) {
                     int index = -1;
                     if (strcmp(third_part, ".2.1.1,") == 0) index = 0;
