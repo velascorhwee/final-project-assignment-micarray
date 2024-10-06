@@ -6,22 +6,57 @@
 #include "mic_array.h"
 #include <signal.h>
 #include <unistd.h>
+#include <termios.h>
 //#define PCM_DEVICE "plughw:1,0"
 //#define CAPTURE_DURATION 1
 //#define SAMPLE_RATE 44100    // Sampling rate in Hz
 //#define PCM_FORMAT SND_PCM_FORMAT_S16_LE  // PCM format (16-bit little-endian)
 //#define CAPTURE_DURATION 1
 
+//set to noncanonical mode to capture key presses
+void set_noncanonical_mode(){
+    struct termios t;
+    tcgetattr(STDIN_FILENO, &t);
+    t.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &t);
+    fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL) | O_NONBLOCK);
+}
+
+void restore_terminal_mode(){
+
+    struct termios t;
+    tcgetattr(STDIN_FILENO, &t);
+    t.c_lflag |= (ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &t);
+}
+
+char get_key_press(){
+    char ch=0;
+    if(read(STDIN_FILENO, &ch, 1) == -1){
+        return 0;
+    }
+    return ch;
+}
+
+
+volatile sig_atomic_t stop = 0;
+
 volatile int running = 1;
 
 void handle_sigint(int sig){
-    printf("Caught signal %d, cleaning up...\n",sig);
-    running = 0;
+    //printf("Caught signal %d, cleaning up...\n",sig);
+    //running = 0;
+    stop = 1;
 }
 
 int main(int argc, char *argv[]) {
 
     signal(SIGINT, handle_sigint);
+
+    set_noncanonical_mode();
+
+    char key_press;
+
     char *device_names[MAX_DEVICES] = {0};
     pthread_t mic_threads[7] = {0};
     snd_pcm_t *playback_handle;
@@ -69,12 +104,40 @@ int main(int argc, char *argv[]) {
     setup_output_pcm(&playback_handle);
     
     mixed_buffer = malloc(FRAMES * PLAYBACK_FRAMES);
+    int gain = 1;
+    while(running && !stop){
+                key_press = get_key_press();                 
+        if(key_press == 'q'){                                                   
+            printf("Terminating program...\n");               
+            running = 0;                                                          
+        }                                                                   
+        else if (key_press == 'w'){                 
+        gain += 1;                                   
+        printf("Increasing gain\n");                                            
+        printf("Gain : %d\n",gain);                           
+        }                                                                         
+        else if (key_press == 's'){                                         
+        gain -= 1;                                                              
+        if(gain < 0){                               
+        gain = 0;                                 
+        }                                                     
+        printf("Decreasing gain\n");                                              
+        printf("Gain : %d\n",gain);                                         
+        }                                           
+        else                                        
+        {                                         
+//      printf("Key pressed is %c\n",key_press);                            
+        }    
 
-    while(running){
         memset(mixed_buffer,0,FRAMES*PLAYBACK_FRAMES);
-        capture_audio(myArray, mixed_buffer, PLAYBACK_FRAMES);
+        capture_audio(myArray, mixed_buffer, PLAYBACK_FRAMES, gain);
 
         play_audio(mixed_buffer, FRAMES, playback_handle);
+
+        if(stop){
+            printf("Caught SIGINT, cleaning up now...\n");
+            break;
+        }
     }
 
     close_capture_devices(myArray);

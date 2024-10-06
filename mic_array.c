@@ -219,7 +219,7 @@ void print_device_names(){
     snd_device_name_free_hint(hints);
 }
 
-int capture_audio(mic_array_t **mic_array, short *mixed_buffer, int frames){
+int capture_audio(mic_array_t **mic_array, short *mixed_buffer, int frames, int gain){
     int err;
     short temp_buffer[MAX_DEVICES][FRAMES];
 
@@ -234,7 +234,7 @@ int capture_audio(mic_array_t **mic_array, short *mixed_buffer, int frames){
         }
         else {
             for(int frame = 0; frame < FRAMES; ++frame){
-                mixed_buffer[frame] += temp_buffer[i][frame]/MAX_DEVICES;
+                mixed_buffer[frame] += temp_buffer[i][frame]*gain;
             }
         }
     }

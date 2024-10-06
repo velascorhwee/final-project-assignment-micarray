@@ -17,6 +17,7 @@
 
 
 
+
 typedef struct {
     char micPos;
     char *device_name;
@@ -43,7 +44,7 @@ int open_file_and_record(mic_array_t *mic);
 
 void *open_file_and_record_thread(void *arg);
 
-int capture_audio(mic_array_t **mic_array, short *mixed_buffer, int frames);
+int capture_audio(mic_array_t **mic_array, short *mixed_buffer, int frames, int gain);
 
 int setup_output_pcm(snd_pcm_t **playback_handle);
 
