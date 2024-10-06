@@ -140,6 +140,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    restore_terminal_mode();
     close_capture_devices(myArray);
     snd_pcm_close(playback_handle);
     return 0;
