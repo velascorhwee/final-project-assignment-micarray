@@ -4,16 +4,28 @@
 #include <libusb-1.0/libusb.h>
 #include <pthread.h>
 #include "mic_array.h"
+#include <signal.h>
+#include <unistd.h>
 //#define PCM_DEVICE "plughw:1,0"
 //#define CAPTURE_DURATION 1
 //#define SAMPLE_RATE 44100    // Sampling rate in Hz
 //#define PCM_FORMAT SND_PCM_FORMAT_S16_LE  // PCM format (16-bit little-endian)
 //#define CAPTURE_DURATION 1
 
+volatile int running = 1;
+
+void handle_sigint(int sig){
+    printf("Caught signal %d, cleaning up...\n",sig);
+    running = 0;
+}
+
 int main(int argc, char *argv[]) {
 
+    signal(SIGINT, handle_sigint);
     char *device_names[MAX_DEVICES] = {0};
     pthread_t mic_threads[7] = {0};
+    snd_pcm_t *playback_handle;
+    short *mixed_buffer;
 
     get_device_names(device_names);
 
@@ -54,12 +66,25 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    setup_output_pcm(&playback_handle);
     
+    mixed_buffer = malloc(FRAMES * PLAYBACK_FRAMES);
+
+    while(running){
+        memset(mixed_buffer,0,FRAMES*PLAYBACK_FRAMES);
+        capture_audio(myArray, mixed_buffer, PLAYBACK_FRAMES);
+
+        play_audio(mixed_buffer, FRAMES, playback_handle);
+    }
+
+    close_capture_devices(myArray);
+    snd_pcm_close(playback_handle);
+    return 0;
     //if(open_file_and_record(myArray[0]) < 0){
     //    printf("Error recording\n");
     //    return -1;
     //}
-
+/*
     for(int i = 0; i < MAX_DEVICES; i++){
     myArray[i]->running = 1;
     pthread_create(&myArray[i]->thread,NULL,open_file_and_record_thread,myArray[i]);
@@ -98,5 +123,6 @@ int main(int argc, char *argv[]) {
         //free(device_names[i]);
         free(myArray[i]);
     }
-    return 0;
+    */
+ 
 }

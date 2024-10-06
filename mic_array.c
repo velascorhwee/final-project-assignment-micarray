@@ -36,7 +36,7 @@ int open_and_configure_capture_devices(mic_array_t **mic_array){
     snd_pcm_hw_params_set_rate_near(mic_array[i]->pcm_handle, mic_array[i]->params, &mic_array[i]->rate, &mic_array[i]->dir);
 
     // Set period size to 32 frames
-    mic_array[i]->frames = 32;
+    mic_array[i]->frames = FRAMES;
     snd_pcm_hw_params_set_period_size_near(mic_array[i]->pcm_handle, mic_array[i]->params, &mic_array[i]->frames, &mic_array[i]->dir);
 
     // Write the parameters to the driver
@@ -219,6 +219,64 @@ void print_device_names(){
     snd_device_name_free_hint(hints);
 }
 
+int capture_audio(mic_array_t **mic_array, short *mixed_buffer, int frames){
+    int err;
+    short temp_buffer[MAX_DEVICES][FRAMES];
+
+    for(int i = 0; i < MAX_DEVICES; ++i){
+        err = snd_pcm_readi(mic_array[i]->pcm_handle,&temp_buffer[i],FRAMES);
+        if (err == -EPIPE){
+            snd_pcm_prepare(mic_array[i]->pcm_handle);
+        }
+       else  if(err < 0){
+            fprintf(stderr, "Error reading mic %d: %s\n",i,snd_strerror(err));
+            return err;
+        }
+        else {
+            for(int frame = 0; frame < FRAMES; ++frame){
+                mixed_buffer[frame] += temp_buffer[i][frame]/MAX_DEVICES;
+            }
+        }
+    }
+
+
+    return 0;
+    
+}
+
+int setup_output_pcm(snd_pcm_t **playback_handle) {
+    snd_pcm_hw_params_t *hw_params;
+    int err;
+
+    // Open the PCM playback device (default is Raspberry Pi's headphone jack)
+    if ((err = snd_pcm_open(playback_handle, "default", SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+        fprintf(stderr, "cannot open audio device %s (%s)\n", "default", snd_strerror(err));
+        return err;
+    }
+
+    // Set hardware parameters
+    snd_pcm_hw_params_alloca(&hw_params);
+    snd_pcm_hw_params_any(*playback_handle, hw_params);
+    snd_pcm_hw_params_set_access(*playback_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED);
+    snd_pcm_hw_params_set_format(*playback_handle, hw_params, SND_PCM_FORMAT_S16_LE);
+    snd_pcm_hw_params_set_channels(*playback_handle, hw_params, 1);  // Mono output
+    unsigned int rate = SAMPLE_RATE;
+    snd_pcm_hw_params_set_rate_near(*playback_handle, hw_params, &rate, 0);
+    snd_pcm_hw_params(*playback_handle, hw_params);
+
+    return 0;
+}
+
+void play_audio(short *mixed_buffer, int frames, snd_pcm_t *playback_handle) {
+    int err;
+    
+    if ((err = snd_pcm_writei(playback_handle, mixed_buffer, frames)) < 0) {
+        fprintf(stderr, "Error writing to audio device: %s\n", snd_strerror(err));
+        snd_pcm_prepare(playback_handle);  // Recover from buffer underrun
+    }
+}
+
+
 void get_device_names(char **devices){
     FILE *file = fopen("/proc/asound/cards", "r");
     if (!file) {
@@ -246,13 +304,13 @@ void get_device_names(char **devices){
                 //this is very specific for the raspberry pi 4 using the TP Link 7 port usb hub
                 if (third_part && strlen(third_part) >= 2) {
                     int index = -1;
-                    if (strcmp(third_part, ".2.1.1,") == 0) index = 0;
-                    else if (strcmp(third_part, ".2.1.2,") == 0) index = 1;
-                    else if (strcmp(third_part, ".2.1.3,") == 0) index = 2;
-                    else if (strcmp(third_part, ".2.1.4,") == 0) index = 3;
-                    else if (third_part[3] == '2') index = 4;
-                    else if (third_part[3] == '3') index = 5;
-                    else if (third_part[3] == '4') index = 6;
+                    if (strcmp(third_part, ".1.1,") == 0) index = 0;
+                    else if (strcmp(third_part, ".1.2,") == 0) index = 1;
+                    else if (strcmp(third_part, ".1.3,") == 0) index = 2;
+                    else if (strcmp(third_part, ".1.4,") == 0) index = 3;
+                    else if (third_part[1] == '2') index = 4;
+                    else if (third_part[1] == '3') index = 5;
+                    else if (third_part[1] == '4') index = 6;
 
                     // If index is valid and within bounds, set the ALSA device name in the array
                     if (index >= 0 && index < MAX_DEVICES) {
