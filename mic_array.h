@@ -12,7 +12,7 @@
 #define PCM_FORMAT SND_PCM_FORMAT_S16_LE  // PCM format (16-bit little-endian)
 #define CAPTURE_DURATION 5
 #define MAX_DEVICES 5
-#define FRAMES 1
+#define FRAMES 64
 #define PLAYBACK_FRAMES 2
 
 
