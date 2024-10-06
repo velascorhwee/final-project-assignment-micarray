@@ -12,8 +12,8 @@
 #define PCM_FORMAT SND_PCM_FORMAT_S16_LE  // PCM format (16-bit little-endian)
 #define CAPTURE_DURATION 5
 #define MAX_DEVICES 5
-#define FRAMES 64
-#define PLAYBACK_FRAMES 2
+#define FRAMES 32
+#define PLAYBACK_FRAMES 1024
 
 
 
@@ -22,6 +22,7 @@ typedef struct {
     char micPos;
     char *device_name;
     char *buffer;
+    int delay;
     snd_pcm_t *pcm_handle;
     snd_pcm_uframes_t frames;
     int buffer_size;
@@ -53,5 +54,7 @@ void play_audio(short *mixed_buffer, int frames, snd_pcm_t *playback_handle);
 void get_device_names(char **devices);
 
 void print_device_names();
+
+int set_mic_delays(mic_array_t **mic_array, int doa);
 
 #endif

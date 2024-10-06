@@ -221,7 +221,7 @@ void print_device_names(){
 
 int capture_audio(mic_array_t **mic_array, short *mixed_buffer, int frames, int gain){
     int err;
-    short temp_buffer[MAX_DEVICES][FRAMES];
+    short temp_buffer[MAX_DEVICES][frames];
 
     for(int i = 0; i < MAX_DEVICES; ++i){
         err = snd_pcm_readi(mic_array[i]->pcm_handle,&temp_buffer[i],FRAMES);
@@ -233,8 +233,10 @@ int capture_audio(mic_array_t **mic_array, short *mixed_buffer, int frames, int 
             return err;
         }
         else {
-            for(int frame = 0; frame < FRAMES; ++frame){
-                mixed_buffer[frame] += temp_buffer[i][frame]*gain;
+            for(int frame = 0; frame < frames; ++frame){
+                if(frame >= mic_array[i]->delay){
+                    mixed_buffer[frame] += (temp_buffer[i][frame-mic_array[i]->delay]/MAX_DEVICES)*gain;
+                }
             }
         }
     }
@@ -304,13 +306,13 @@ void get_device_names(char **devices){
                 //this is very specific for the raspberry pi 4 using the TP Link 7 port usb hub
                 if (third_part && strlen(third_part) >= 2) {
                     int index = -1;
-                    if (strcmp(third_part, ".2.1.1,") == 0) index = 0;
-                    else if (strcmp(third_part, ".2.1.2,") == 0) index = 1;
-                    else if (strcmp(third_part, ".2.1.3,") == 0) index = 2;
-                    else if (strcmp(third_part, ".2.1.4,") == 0) index = 3;
-                    else if (third_part[3] == '2') index = 4;
-                    else if (third_part[3] == '3') index = 5;
-                    else if (third_part[3] == '4') index = 6;
+                    if (strcmp(third_part, ".1.1,") == 0) index = 0;
+                    else if (strcmp(third_part, ".1.2,") == 0) index = 1;
+                    else if (strcmp(third_part, ".1.3,") == 0) index = 2;
+                    else if (strcmp(third_part, ".1.4,") == 0) index = 3;
+                    else if (third_part[1] == '2') index = 4;
+                    else if (third_part[1] == '3') index = 5;
+                    else if (third_part[1] == '4') index = 6;
 
                     // If index is valid and within bounds, set the ALSA device name in the array
                     if (index >= 0 && index < MAX_DEVICES) {
@@ -327,4 +329,42 @@ void get_device_names(char **devices){
     }
 
     fclose(file);
+}
+
+int set_mic_delays(mic_array_t **mic_array, int doa){
+    if(doa == 0){
+        mic_array[0]->delay = 0;
+        mic_array[1]->delay = 0;
+        mic_array[2]->delay = 0;
+        mic_array[3]->delay = 0;
+        mic_array[4]->delay = 0;
+    }
+    else if (doa == 45){
+        mic_array[0]->delay = 0;
+        mic_array[1]->delay = 3;
+        mic_array[2]->delay = 5;
+        mic_array[3]->delay = 7;
+        mic_array[4]->delay = 9;
+    }
+    else if(doa == 90){
+        mic_array[0]->delay = 0;
+        mic_array[1]->delay = 3;
+        mic_array[2]->delay = 6;
+        mic_array[3]->delay = 9;
+        mic_array[4]->delay = 12;
+    }
+    else if(doa == -45){
+        mic_array[0]->delay = 9;
+        mic_array[1]->delay = 7;
+        mic_array[2]->delay = 5;
+        mic_array[3]->delay = 3;
+        mic_array[4]->delay = 0;
+    }
+    else if(doa == -90){
+        mic_array[0]->delay = 12;
+        mic_array[1]->delay = 9;
+        mic_array[2]->delay = 6;
+        mic_array[3]->delay = 3;
+        mic_array[4]->delay = 0;
+    }
 }

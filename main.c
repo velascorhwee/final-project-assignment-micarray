@@ -94,6 +94,7 @@ int main(int argc, char *argv[]) {
         myArray[i]->micPos = i;
         myArray[i]->thread = mic_threads[i];
         myArray[i]->running = 0;
+        myArray[i]->delay = 0;
     }   
 
     if(open_and_configure_capture_devices(myArray) < 0){
@@ -105,29 +106,50 @@ int main(int argc, char *argv[]) {
     
     mixed_buffer = malloc(FRAMES * PLAYBACK_FRAMES);
     int gain = 1;
+    int doa = 0;
     while(running && !stop){
-                key_press = get_key_press();                 
-        if(key_press == 'q'){                                                   
-            printf("Terminating program...\n");               
-            running = 0;                                                          
-        }                                                                   
-        else if (key_press == 'w'){                 
-        gain += 1;                                   
-        printf("Increasing gain\n");                                            
-        printf("Gain : %d\n",gain);                           
-        }                                                                         
-        else if (key_press == 's'){                                         
-        gain -= 1;                                                              
-        if(gain < 0){                               
-        gain = 0;                                 
-        }                                                     
-        printf("Decreasing gain\n");                                              
-        printf("Gain : %d\n",gain);                                         
-        }                                           
-        else                                        
-        {                                         
-//      printf("Key pressed is %c\n",key_press);                            
-        }    
+                key_press = get_key_press();
+                if (key_press == 'q')
+                {
+                    printf("Terminating program...\n");
+                    running = 0;
+                }
+                else if (key_press == 'w')
+                {
+                    gain += 1;
+                    printf("Increasing gain\n");
+                    printf("Gain : %d\n", gain);
+                }
+                else if (key_press == 's')
+                {
+                    gain -= 1;
+                    if (gain < 0)
+                    {
+                        gain = 0;
+                    }
+                    printf("Decreasing gain\n");
+                    printf("Gain : %d\n", gain);
+                }
+                else if(key_press == 'd'){
+                    doa += 45;
+                    if(doa > 90){
+                        doa = 90;
+                    }    
+                    printf("DOA : %d\n",doa);
+                    set_mic_delays(myArray, doa);
+                }
+                else if(key_press == 'a'){
+                    doa -= 45;
+                    if(doa < -90){
+                        doa = -90;
+                    }
+                    printf("DOA : %d\n",doa);
+                    set_mic_delays(myArray,doa);
+                }
+                else
+                {
+                    //      printf("Key pressed is %c\n",key_press);
+                }
 
         memset(mixed_buffer,0,FRAMES*PLAYBACK_FRAMES);
         capture_audio(myArray, mixed_buffer, PLAYBACK_FRAMES, gain);
