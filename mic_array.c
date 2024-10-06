@@ -306,13 +306,13 @@ void get_device_names(char **devices){
                 //this is very specific for the raspberry pi 4 using the TP Link 7 port usb hub
                 if (third_part && strlen(third_part) >= 2) {
                     int index = -1;
-                    if (strcmp(third_part, ".1.1,") == 0) index = 0;
-                    else if (strcmp(third_part, ".1.2,") == 0) index = 1;
-                    else if (strcmp(third_part, ".1.3,") == 0) index = 2;
-                    else if (strcmp(third_part, ".1.4,") == 0) index = 3;
-                    else if (third_part[1] == '2') index = 4;
-                    else if (third_part[1] == '3') index = 5;
-                    else if (third_part[1] == '4') index = 6;
+                    if (strcmp(third_part, ".2.1.1,") == 0) index = 0;
+                    else if (strcmp(third_part, ".2.1.2,") == 0) index = 1;
+                    else if (strcmp(third_part, ".2.1.3,") == 0) index = 2;
+                    else if (strcmp(third_part, ".2.1.4,") == 0) index = 3;
+                    else if (third_part[3] == '2') index = 4;
+                    else if (third_part[3] == '3') index = 5;
+                    else if (third_part[3] == '4') index = 6;
 
                     // If index is valid and within bounds, set the ALSA device name in the array
                     if (index >= 0 && index < MAX_DEVICES) {
