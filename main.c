@@ -73,16 +73,16 @@ int main(int argc, char *argv[]) {
     for(int i = 0 ; i < MAX_DEVICES ; i++){
         threads_complete += myArray[i]->running;
     }
-    int running_threads = 7;
+    int running_threads = MAX_DEVICES;
     while(running_threads){
-        printf("running threads: %d\n",running_threads);
+        //printf("running threads: %d\n",running_threads);
         for(int i = 0 ; i < MAX_DEVICES ; i++){
             if(myArray[i]->running == 0){
                 printf("thread is running: %d\n",myArray[i]->running);
                 myArray[i]->running = -1;
                 pthread_join(myArray[i]->thread,NULL);
-                //close_capture_device(myArray[i]);
-                //free(device_names[i]);
+                close_capture_device(myArray[i]);
+                free(device_names[i]);
 		        running_threads -= 1;
                 //free(myArray[i]);
             }
@@ -90,12 +90,12 @@ int main(int argc, char *argv[]) {
 
     }
 
-    if(close_capture_devices(myArray) < 0){
+    if(0){//close_capture_devices(myArray) < 0){
         printf("Error closing devices\n");
         return -1;
     }
     for(int i = 0 ; i < MAX_DEVICES ; i++){
-        free(device_names[i]);
+        //free(device_names[i]);
         free(myArray[i]);
     }
     return 0;
