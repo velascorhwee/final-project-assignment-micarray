@@ -13,9 +13,13 @@ find_library(ALSALIB asound REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
 
-# Link the libraries, including pthread
-target_link_libraries(MicArray PRIVATE ${ALSALIB} ${LIBUSB_LIBRARIES} pthread)
+# Find GStreamer and GLib packages
+pkg_check_modules(GST REQUIRED gstreamer-1.0)
+pkg_check_modules(GLIB REQUIRED glib-2.0)
 
-# Include libusb headers
-target_include_directories(MicArray PRIVATE ${LIBUSB_INCLUDE_DIRS})
+# Link the libraries, including pthread, GStreamer, and GLib
+target_link_libraries(MicArray PRIVATE ${ALSALIB} ${LIBUSB_LIBRARIES} ${GST_LIBRARIES} ${GLIB_LIBRARIES} pthread)
+
+# Include libusb, GStreamer, and GLib headers
+target_include_directories(MicArray PRIVATE ${LIBUSB_INCLUDE_DIRS} ${GST_INCLUDE_DIRS} ${GLIB_INCLUDE_DIRS})
 
