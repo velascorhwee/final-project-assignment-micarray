@@ -315,7 +315,7 @@ void get_device_names(char **devices){
                     else if (third_part[3] == '4') index = 6;
 
                     // If index is valid and within bounds, set the ALSA device name in the array
-                    if (index >= 0 && index < MAX_DEVICES) {
+                    if (index >= 0 && index < 6) {
                         char alsa_device[16];
                         snprintf(alsa_device, sizeof(alsa_device), "plughw:%d,0", current_card);
 
@@ -336,35 +336,35 @@ int set_mic_delays(mic_array_t **mic_array, int doa){
         mic_array[0]->delay = 0;
         mic_array[1]->delay = 0;
         mic_array[2]->delay = 0;
-        mic_array[3]->delay = 0;
-        mic_array[4]->delay = 0;
+        //mic_array[3]->delay = 0;
+        //mic_array[4]->delay = 0;
     }
     else if (doa == 45){
         mic_array[0]->delay = 0;
-        mic_array[1]->delay = 3;
-        mic_array[2]->delay = 5;
-        mic_array[3]->delay = 7;
-        mic_array[4]->delay = 9;
+        mic_array[1]->delay = 7;
+        mic_array[2]->delay = 14;
+        //mic_array[3]->delay = 7;
+        //mic_array[4]->delay = 9;
     }
     else if(doa == 90){
         mic_array[0]->delay = 0;
-        mic_array[1]->delay = 3;
-        mic_array[2]->delay = 6;
-        mic_array[3]->delay = 9;
-        mic_array[4]->delay = 12;
+        mic_array[1]->delay = 8;
+        mic_array[2]->delay = 20;
+        //mic_array[3]->delay = 9;
+        //mic_array[4]->delay = 12;
     }
     else if(doa == -45){
-        mic_array[0]->delay = 9;
+        mic_array[0]->delay = 14;
         mic_array[1]->delay = 7;
-        mic_array[2]->delay = 5;
-        mic_array[3]->delay = 3;
-        mic_array[4]->delay = 0;
+        mic_array[2]->delay = 0;
+        //mic_array[3]->delay = 3;
+        //mic_array[4]->delay = 0;
     }
     else if(doa == -90){
-        mic_array[0]->delay = 12;
-        mic_array[1]->delay = 9;
+        mic_array[0]->delay = 20;
+        mic_array[1]->delay = 8;
         mic_array[2]->delay = 6;
-        mic_array[3]->delay = 3;
-        mic_array[4]->delay = 0;
+        //mic_array[3]->delay = 3;
+        //mic_array[4]->delay = 0;
     }
 }
