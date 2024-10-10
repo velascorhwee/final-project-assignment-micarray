@@ -306,7 +306,7 @@ void get_device_names(char **devices){
                 //this is very specific for the raspberry pi 4 using the TP Link 7 port usb hub
                 if (third_part && strlen(third_part) >= 2) {
                     int index = -1;
-                    if (strcmp(third_part, ".1.1,") == 0) index = 0;
+                    if (strcmp(third_part, ".2.1.1,") == 0) index = 0;
                     else if (strcmp(third_part, ".2.1.2,") == 0) index = 1;
                     else if (strcmp(third_part, ".2.1.3,") == 0) index = 2;
                     else if (strcmp(third_part, ".2.1.4,") == 0) index = 3;
