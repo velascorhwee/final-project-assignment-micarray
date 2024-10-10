@@ -11,9 +11,9 @@
 #define SAMPLE_RATE 44100
 #define PCM_FORMAT SND_PCM_FORMAT_S16_LE  // PCM format (16-bit little-endian)
 #define CAPTURE_DURATION 5
-#define MAX_DEVICES 5
+#define MAX_DEVICES 3
 #define FRAMES 32
-#define PLAYBACK_FRAMES 1024
+#define PLAYBACK_FRAMES 512
 
 
 
