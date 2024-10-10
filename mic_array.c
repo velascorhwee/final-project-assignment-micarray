@@ -286,6 +286,7 @@ void get_device_names(char **devices){
         return;
     }
 
+    int device_list_index = 0;
     char line[256];
     int current_card = -1;
     while (fgets(line, sizeof(line), file)) {
@@ -318,10 +319,19 @@ void get_device_names(char **devices){
                     if (index >= 0 && index < 6) {
                         char alsa_device[16];
                         snprintf(alsa_device, sizeof(alsa_device), "plughw:%d,0", current_card);
+                        if(index == 0){
+                            device_list_index = 0;
+                        }
+                        else if(index == 3){
+                            device_list_index = 1;
+                        }
+                        else if(index == 6){
+                            device_list_index = 2;
+                        }
 
                         // Allocate memory for the device name and copy it into the array
-                        devices[index] = malloc(strlen(alsa_device) + 1);
-                        strcpy(devices[index], alsa_device);
+                        devices[device_list_index] = malloc(strlen(alsa_device) + 1);
+                        strcpy(devices[device_list_index], alsa_device);
                         
                     }
                 }
