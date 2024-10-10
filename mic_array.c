@@ -295,7 +295,7 @@ void get_device_names(char **devices){
         }
 
         // Check if the line contains a USB device description
-        char *usb_pos = strstr(line, "usb-");
+        char *usb_pos = strstr(line, "USB PnP Sound Device");
         if (usb_pos) {
             // Extract the USB port number (e.g., 1.1.3)
             char port[10];
@@ -322,6 +322,7 @@ void get_device_names(char **devices){
                         // Allocate memory for the device name and copy it into the array
                         devices[index] = malloc(strlen(alsa_device) + 1);
                         strcpy(devices[index], alsa_device);
+                        
                     }
                 }
             }
