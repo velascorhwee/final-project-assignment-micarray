@@ -220,9 +220,9 @@ int main(int argc, char *argv[]) {
 
     set_noncanonical_mode();
 
-    GstElement *pipeline, *source, *convert, *sink;
+    GstElement *pipeline, *source, *convert, *sink, *capsfilter, *decoder;
     GstBus *bus;
-    GstCaps *caps;
+    //GstCaps *caps;
   
 
     // Initialize GStreamer
@@ -233,24 +233,21 @@ int main(int argc, char *argv[]) {
 
     // Create the elements
     source = gst_element_factory_make("v4l2src", "source");
+    capsfilter = gst_element_factory_make("capsfilter", "capsfilter");
+    decoder = gst_element_factory_make("jpegdec", "decoder");
     convert = gst_element_factory_make("videoconvert", "convert");
     textoverlay = gst_element_factory_make("textoverlay", "textoverlay");
-    sink = gst_element_factory_make("autovideosink", "sink");
+    sink = gst_element_factory_make("kmssink", "sink");
 
-    if (!source || !convert || !textoverlay || !sink) {
+    if (!source || !capsfilter || !decoder || !convert || !textoverlay || !sink) {
         g_printerr("One element could not be created. Exiting.\n");
         return -1;
     }
 
         // Define the caps for the source (v4l2src)
-    caps = gst_caps_new_simple("video/x-raw",
-                               "width", G_TYPE_INT, 640,
-                               "height", G_TYPE_INT, 480,
-                               "framerate", GST_TYPE_FRACTION, 30, 1,
-                               "format", G_TYPE_STRING, "YUY2",
-                               "interlace-mode", G_TYPE_STRING, "progressive",
-                               "colorimetry", G_TYPE_STRING, "2:4:16:1",
-                               NULL);
+    GstCaps *caps = gst_caps_from_string("image/jpeg,width=1920,height=1080");
+    g_object_set(capsfilter, "caps", caps, NULL);
+    gst_caps_unref(caps);
 
         // Set the custom text overlay properties
     g_object_set(G_OBJECT(textoverlay),
@@ -264,25 +261,23 @@ int main(int argc, char *argv[]) {
     pipeline = gst_pipeline_new("video-pipeline");
 
     // Build the pipeline
-    gst_bin_add_many(GST_BIN(pipeline), source, convert, textoverlay, sink, NULL);
+    gst_bin_add_many(GST_BIN(pipeline), source, capsfilter, decoder, convert, textoverlay, sink, NULL);
 
     // Link the source with caps to videoconvert
-    if (!gst_element_link_filtered(source, convert, caps)) {
-        g_printerr("Source and convert could not be linked with caps. Exiting.\n");
-        gst_caps_unref(caps);
-        gst_object_unref(pipeline);
-        return -1;
-    }
+   // if (!gst_element_link_filtered(source, convert, caps)) {
+   //     g_printerr("Source and convert could not be linked with caps. Exiting.\n");
+   //     gst_caps_unref(caps);
+   //     gst_object_unref(pipeline);
+   //     return -1;
+   // }
 
     // Link the rest of the pipeline
-    if (!gst_element_link_many(convert, textoverlay, sink, NULL)) {
+    if (!gst_element_link_many(source, capsfilter, decoder, convert, textoverlay, sink, NULL)) {
         g_printerr("Convert, textoverlay, and sink could not be linked. Exiting.\n");
         gst_object_unref(pipeline);
         return -1;
     }
 
-    // Free caps after usage
-    gst_caps_unref(caps);
 
     // Set the pipeline to "playing" state
     gst_element_set_state(pipeline, GST_STATE_PLAYING);
