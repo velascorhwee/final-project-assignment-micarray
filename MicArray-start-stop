@@ -29,7 +29,7 @@ do_start() {
         echo "MicArray is already running."
     else
         # Start the application and write the PID to the pidfile
-        start-stop-daemon --start --background --pidfile $PID_FILE --make-pidfile --chuid $DAEMON_USER --exec $DAEMON_PATH/$DAEMON -- $DAEMON_OPTS >> $LOG_FILE 2>&1
+        start-stop-daemon --start --pidfile $PID_FILE --make-pidfile --chuid $DAEMON_USER --exec $DAEMON_PATH/$DAEMON -- $DAEMON_OPTS >> $LOG_FILE 2>&1
         echo "MicArray started."
     fi
 }
