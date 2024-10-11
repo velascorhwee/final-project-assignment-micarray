@@ -11,7 +11,8 @@
 
 # Path to the application binary
 DAEMON_PATH="/usr/bin"
-DAEMON="micarray"
+DAEMON="MicArray"
+
 DAEMON_OPTS=""
 
 # Log files
