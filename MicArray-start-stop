@@ -1,0 +1,81 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          micarray
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start MicArray application at boot
+# Description:       Starts the MicArray audio capture and processing application
+### END INIT INFO
+
+# Path to the application binary
+DAEMON_PATH="/usr/bin"
+DAEMON="micarray"
+DAEMON_OPTS=""
+
+# Log files
+LOG_FILE="/var/log/micarray.log"
+PID_FILE="/var/run/micarray.pid"
+
+# Application user (if needed)
+DAEMON_USER="root"
+
+# Start the service
+do_start() {
+    echo "Starting MicArray..."
+    if [ -f $PID_FILE ] && kill -0 $(cat $PID_FILE); then
+        echo "MicArray is already running."
+    else
+        # Start the application and write the PID to the pidfile
+        start-stop-daemon --start --background --pidfile $PID_FILE --make-pidfile --chuid $DAEMON_USER --exec $DAEMON_PATH/$DAEMON -- $DAEMON_OPTS >> $LOG_FILE 2>&1
+        echo "MicArray started."
+    fi
+}
+
+# Stop the service
+do_stop() {
+    echo "Stopping MicArray..."
+    if [ -f $PID_FILE ] && kill -0 $(cat $PID_FILE); then
+        start-stop-daemon --stop --pidfile $PID_FILE
+        rm -f $PID_FILE
+        echo "MicArray stopped."
+    else
+        echo "MicArray is not running."
+    fi
+}
+
+# Restart the service
+do_restart() {
+    do_stop
+    do_start
+}
+
+# Check the status of the service
+do_status() {
+    if [ -f $PID_FILE ] && kill -0 $(cat $PID_FILE); then
+        echo "MicArray is running."
+    else
+        echo "MicArray is not running."
+    fi
+}
+
+case "$1" in
+    start)
+        do_start
+        ;;
+    stop)
+        do_stop
+        ;;
+    restart)
+        do_restart
+        ;;
+    status)
+        do_status
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+exit 0
