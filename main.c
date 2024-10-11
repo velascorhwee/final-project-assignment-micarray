@@ -254,7 +254,7 @@ int main(int argc, char *argv[]) {
                  "text", "Your Custom Text",   // The text to overlay
                  "valignment", 0,              // Align the text to the top (0 = top, 1 = center, 2 = bottom)
                  "halignment", 0,              // Align the text to the left (0 = left, 1 = center, 2 = right)
-                 "font-desc", "Sans, 24",      // Font description
+                 "font-desc", "LiberationMono-Regular, 24",      // Font description
                  NULL);
 
 // Create the empty pipeline

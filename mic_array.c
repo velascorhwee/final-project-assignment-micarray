@@ -296,7 +296,7 @@ void get_device_names(char **devices){
         }
 
         // Check if the line contains a USB device description
-        char *usb_pos = strstr(line, "USB PnP Sound Device");
+        char *usb_pos = strstr(line, "usb-");
         if (usb_pos) {
             // Extract the USB port number (e.g., 1.1.3)
             char port[10];
@@ -316,7 +316,7 @@ void get_device_names(char **devices){
                     else if (third_part[3] == '4') index = 6;
 
                     // If index is valid and within bounds, set the ALSA device name in the array
-                    if (index >= 0 && index < 6) {
+                    if (index >= 0 && index <= 6) {
                         char alsa_device[16];
                         snprintf(alsa_device, sizeof(alsa_device), "plughw:%d,0", current_card);
                         if(index == 0){
